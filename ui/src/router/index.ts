@@ -29,13 +29,13 @@ export default route(function (/* { store, ssrContext } */) {
   });
 
   const PUBLIC_PAGES = ["login", "signup", "about", "sandbox"] as RouteRecordName[];
+  const GUEST_PAGES = ["login", "signup"] as RouteRecordName[];
   Router.beforeEach(async (to, from) => {
     emitter.emit("router:change", { to, from });
     const toName = to.name || "";
-    if (PUBLIC_PAGES.includes(toName)) {
-      return;
-    }
     const userStore = useUserStore();
+
+
     if (!userStore.isAuthenticated) {
       // Cookie session may exist server-side even though the SPA just booted —
       // probe /users/me once before bouncing to login.
@@ -45,6 +45,16 @@ export default route(function (/* { store, ssrContext } */) {
         // not authenticated
       }
     }
+
+    if(userStore.isAuthenticated && GUEST_PAGES.includes(toName)){
+      return {name: "index"};
+    }
+
+    if (PUBLIC_PAGES.includes(toName)) {
+      return;
+    }
+    
+
     if (!userStore.isAuthenticated) {
       return { name: "login" };
     }
